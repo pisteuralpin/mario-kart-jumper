@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 'SuperMario';
+    src: url('../fonts/SuperMario256.ttf');
+}
+
+#game {
+    width: calc(100% - 4rem);
+    margin-left: 2rem; margin-top: 4rem;
+    image-rendering: pixelated;
+}
