@@ -17,7 +17,7 @@ class Decoration {
 
     draw(context) {
         const sprite = new Image();
-        sprite.src = `assets/game/${this.sprite}.png`;
+        sprite.src = `../assets/game/${this.sprite}.png`;
         context.drawImage(sprite, this.position.x, canvas.height - 32*scale - this.position.y, this.size.width, this.size.height);
     }
 }
