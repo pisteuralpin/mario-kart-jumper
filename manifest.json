@@ -34,5 +34,14 @@
     "name": "Mario K'art Jumper",
     "short_name": "Mario K'art",
     "orientation": "landscape",
-    "start_url": "/index.html"
+    "start_url": "./index.html",
+    "shortcuts": [
+        {
+            "name": "Allôs",
+            "short_name": "Allôs",
+            "description": "Voir la liste des allôs des Mario K'art",
+            "url": "/allos.html",
+            "icons": [{ "src": "./assets/icons/mario_192.png", "sizes": "192x192" }]
+        }
+    ]
 }
