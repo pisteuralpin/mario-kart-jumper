@@ -3,7 +3,7 @@ const CACHE_NAME = "game-cache-v1";
 
 // Liste des fichiers à mettre en cache
 const FILES_TO_CACHE = [
-    "./index.html",
+    "../../index.html",
     "../styles/game.css",
 
     "../scripts/game/main.js",
@@ -36,7 +36,7 @@ const FILES_TO_CACHE = [
 
     "../fonts/SuperMario256.ttf",
 
-    "./manifest.json"
+    "../../manifest.json"
 ];
 
 // Installation du service worker et mise en cache des fichiers
