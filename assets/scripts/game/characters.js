@@ -1,4 +1,4 @@
-import { canvas, scale, characters, gameSpeed, gravity, gameTick } from './main.js';
+import { assetsCache, canvas, scale, characters, gameSpeed, gravity, gameTick } from './main.js';
 
 class Character {
     constructor(position, sprite, size = { width: 16*scale, height: 16*scale }, speed = 0) {
@@ -6,22 +6,36 @@ class Character {
         this.size = size;
         this.sprite = sprite;
         this.speed = speed;
+        this.tick = 0;
     }
 
-    draw(context) {
-        const sprite = new Image();
-        if (this.animation != undefined && this.animation != 0) {
-            sprite.src = `assets/game/${this.sprite}_${Math.floor(gameTick/10 % this.animation)}.png`;
+    draw(ctx) {
+        let sprite;
+        if (this.animation == undefined || this.animation == 0 || this.state == "dead") {
+            if (this.state == "dead" && this.has_dead_variant && this.sprite.indexOf("_dead") == -1) {
+                this.sprite += "_dead";
+            }
+            if (this.sprite in assetsCache) {
+                sprite = assetsCache[this.sprite];
+            }
+            else {
+                sprite = new Image();
+                sprite.src = `./assets/game/${this.sprite}.png`;
+                assetsCache[this.sprite] = sprite;
+            }
         }
         else {
-            sprite.src = `assets/game/${this.sprite}.png`;
+            if (this.sprite in assetsCache) {
+                sprite = assetsCache[this.sprite + Math.floor(this.tick/this.animationDuration%this.animation)];
+            }
+            else {
+                sprite = new Image();
+                sprite.src = `./assets/game/${this.sprite}_${Math.floor(this.tick/this.animationDuration%this.animation)}.png`;
+                assetsCache[this.sprite + Math.floor(this.tick/this.animationDuration%this.animation)] = sprite;
+            }
         }
-        if (this.state == "dead") {
-            context.drawImage(sprite, this.position.x, canvas.height - 32*scale - this.position.y + this.size.height/2, this.size.width, this.size.height/2);
-        }
-        else {
-            context.drawImage(sprite, this.position.x, canvas.height - 32*scale - this.position.y, this.size.width, this.size.height);
-        }
+
+        ctx.drawImage(sprite, this.position.x, canvas.height - 32*scale - this.position.y, this.size.width, this.size.height);
     }
 }
 
@@ -30,22 +44,35 @@ class Player extends Character {
         super(position, sprite);
         this.yVelocity = 0;
         this.yAcceleration = 0;
+        this.animation = 8;
+        this.animationDuration = 10;
+        this.has_dead_variant = true;
     }
 
     update() {
+        this.tick++;
         this.yVelocity += this.yAcceleration;
         this.position.y += this.yVelocity*scale;
         this.yAcceleration = gravity;
-        if (this.position.y < 0) {
+        if (this.position.y < 0 && this.state != "dead") {
             this.position.y = 0;
             this.yVelocity = 0;
             this.yAcceleration = 0;
         }
+        else if (this.position.y < -2*this.size.height && this.state == "dead") {
+            this.yVelocity = 0;
+            this.yAcceleration = 0;
+        }
+
         if (this.state != "dead") {
+            if (this.sprite.indexOf("_dead") != -1) {
+                this.sprite = this.sprite.replace("_dead", "");
+            }
             characters.filter(character => character !== this && character.state != 'dead').forEach(character => {
                 if (character.isTouching(this)) {
                     if (character instanceof Enemy) {
                         this.state = "dead";
+                        this.yAcceleration = 2;
                     }
                 }
             });
@@ -57,6 +84,13 @@ class Player extends Character {
             this.yAcceleration = 3;
         }
     }
+
+    relive() {
+        this.state = "alive";
+        this.position.y = 0;
+        this.yVelocity = 0;
+        this.yAcceleration = 0;
+    }
 }
 
 class Enemy extends Character {
@@ -65,6 +99,7 @@ class Enemy extends Character {
     }
 
     update() {
+        this.tick++;
         if (this.state == "dead") {
             this.position.x -= gameSpeed * scale;
         }
@@ -79,7 +114,7 @@ class Enemy extends Character {
 
 class Bullet extends Enemy {
     constructor(position) {
-        super(position, 'bullet', { width: 16*scale, height: 16*scale }, .6);
+        super(position, 'bullet', { width: 16*scale, height: 16*scale }, .5);
     }
 
     isTouching(player) {
@@ -95,7 +130,9 @@ class Bullet extends Enemy {
                  player.position.y < this.position.y + this.size.height &&
                  player.position.y + player.size.height > this.position.y){
             this.state = "dead";
-            player.yAcceleration = 1;
+            this.size.height /= 2;
+            this.position.y -= this.size.height;
+            player.yAcceleration = 2;
             return false;
         }
     }
@@ -103,7 +140,9 @@ class Bullet extends Enemy {
 
 class Goomba extends Enemy {
     constructor(position) {
-        super(position, 'goomba', { width: 16*scale, height: 16*scale }, -.3);
+        super(position, 'goomba', { width: 16*scale, height: 16*scale }, -.2);
+        this.animation = 2;
+        this.animationDuration = 15;
     }
 
     isTouching(player) {
@@ -119,7 +158,9 @@ class Goomba extends Enemy {
                  player.position.y < this.position.y + this.size.height &&
                  player.position.y + player.size.height > this.position.y){
             this.state = "dead";
-            player.yAcceleration = 1;
+            this.size.height /= 2;
+            this.position.y -= this.size.height;
+            player.yAcceleration = 2;
             return false;
         }
     }
@@ -132,7 +173,7 @@ class Banana extends Enemy {
 
     isTouching(player) {
         // return true if the player hitbox is in the character hitbox
-        return (player.position.x < this.position.x + this.size.width*.8 &&
+        return (player.position.x < this.position.x + this.size.width*.7 &&
                 player.position.x + player.size.width > this.position.x + this.size.width*.2 &&
                 player.position.y < this.position.y + this.size.height &&
                 player.position.y + player.size.height > this.position.y);

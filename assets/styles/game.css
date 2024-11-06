@@ -3,8 +3,21 @@
     src: url('../fonts/SuperMario256.ttf');
 }
 
+body {
+    user-select: none;
+    -webkit-user-select: none;
+    background-color: black;
+}
+
 #game {
     width: calc(100% - 4rem);
     margin-left: 2rem; margin-top: 4rem;
     image-rendering: pixelated;
+}
+
+@media screen and (max-width: 768px) {
+    #game {
+        width: 100dvw;
+        margin: 0; margin-top: calc(50dvh - 12.5dvw);
+    }
 }
