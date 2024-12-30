@@ -118,10 +118,13 @@ class Bullet extends Enemy {
     }
 
     isTouching(player) {
-        // return true if the player hitbox is in the first left third of the bullet
         if (player.position.x + player.size.width > this.position.x &&
             player.position.x < this.position.x + this.size.width*.2 &&
             player.position.y < this.position.y + this.size.height*.8 &&
+            player.position.y + player.size.height > this.position.y ||
+            player.position.x + player.size.width > this.position.x &&
+            player.position.x < this.position.x + this.size.width &&
+            player.position.y < this.position.y + this.size.height*.2 &&
             player.position.y + player.size.height > this.position.y) {
                 return true;
         }
